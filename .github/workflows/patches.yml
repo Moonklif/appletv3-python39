@@ -1,4 +1,4 @@
-name: Verify recovered patches
+name: Verify CPython patches
 on: [push, pull_request]
 permissions:
   contents: read

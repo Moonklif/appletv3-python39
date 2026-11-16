@@ -1,146 +1,109 @@
-# Build and recovery status / Build- und Wiederherstellungsstand
+# Build und Tests / Build and tests
 
-Recovery and verification date: **2026-11-16**.
+Stand / checked: **2026-11-16**.
 
 ## Deutsch
 
-### Was zuvor veröffentlicht war
+Ich baue CPython 3.9.25 für ein jailbroken **AppleTV3,2 (A1469)** mit ARMv7.
+Meine getestete Systemversion auf dem Gerät ist **8.4.4**, Darwin 14.0.0.
+Das Compilerziel ist `armv7-apple-ios8.4` mit Prefix `/usr/local`.
 
-`main` enthielt bis Commit `8635887` ausschließlich `README.md`, `LICENSE`
-und diese Statusnotiz. Es gab vier Commits, einen Branch und kein Release.
-Die im [geteilten Chat](https://chatgpt.com/share/6afb2e03-6334-83ed-894b-6c6d8f740cca)
-beschriebenen Projektdateien waren nicht ins GitHub-Repository übertragen worden.
-Die damalige Aussage, die Originalpatches seien im Repository nicht vorhanden,
-war richtig; die Dateien lagen noch auf dem Build-Mac.
+### Buildumgebung
 
-### Wiederhergestellte Dateien
-
-| Fund | Prüfung / Veröffentlichung |
+| Komponente | Version |
 | --- | --- |
-| `Python-3.9.25.tgz` | Bytegleich mit erneut heruntergeladenem offiziellen Python-Archiv; SHA-256 im Fetchskript und Release |
-| CPython-Quellbaum | Keine fehlenden Upstream-Dateien; exakt drei Upstream-Dateien verändert: `configure`, `configure.ac`, `setup.py` |
-| `setup.py-armv7-ios.patch` | Original mit 219 Zeilen; bytegleich mit aus den Quellen neu erzeugtem Diff unter `patches/setup.py.patch` |
-| `configure` und `configure.ac` | Diffs direkt zwischen offiziellen Originaldateien und dem vorhandenen Quellstand, keine aus Chaterinnerung erfundenen Patches |
-| `config.site`, `config.status`, `Makefile` | Vier Cacheantworten, tatsächliche Compilerflags und Configure-Optionen wiedergefunden; daraus neue Buildskripte erstellt |
-| Originales Installationsarchiv | SHA-256 und Hash jedes regulären Archivmitglieds in `evidence/original-archive.json` |
-| Build- und Installationslogs | Veröffentlicht unter `evidence/`; persönliche Homepfade und Hostname ersetzt |
+| Build-Mac | Apple Silicon, ARM64; Darwin 27.2.0 im Buildprotokoll |
+| Native Python-Version | CPython 3.9.25 |
+| Nativer Compiler | Apple Clang 21.0.0 |
+| Ziel-Xcode | 6.4 (6E35b) |
+| Zielcompiler | Apple LLVM 6.1.0, clang-602.0.53 |
+| SDK | iPhoneOS 8.4 |
+| Configure-Basis | GNU Autoconf 2.69; generiertes `configure` direkt patchen |
 
-Zusätzliche Quelldateien waren nur Zwischensicherungen der drei Änderungen
-und Autoconf-Cachedateien. Für den Nachbau werden die offiziellen Quellen plus
-die drei vollständigen Patches benötigt. Der frühere Chat-Runner wird nicht
-als wiederhergestellt ausgegeben; `scripts/apply-patches.py` ist ein neues,
-geprüftes Werkzeug für die tatsächlich gefundenen Diffs.
+### Quellen und Patches
 
-### Bestätigte Werkzeuge
+Die Quellen stammen aus dem offiziellen `Python-3.9.25.tgz`.
+SHA-256: `a7438eabd3a48139f42d4e058096af8d880b0bb6e8fb8c78838892e4ce5583f2`.
+Geändert werden ausschließlich `configure`, `configure.ac` und `setup.py`.
+Der Setup-Patch hat 219 Zeilen. Die Patches und ihre Vorher-/Nachher-Hashes
+liegen unter [`patches/`](../patches/).
 
-| Komponente | Wert / Nachweis |
+### Auf dem Mac geprüft
+
+- Download und SHA-256 der offiziellen Quellen.
+- Exakte Patch-Ergebnisse, wiederholte Anwendung, Sicherungskopien und Ablehnung fremder Änderungen.
+- Shell- und Python-Syntax.
+- Nativer Host-Python-Build, anschließend ARMv7-Cross-Build mit diesem Interpreter.
+- Installation in ein separates Verzeichnis mit `make install DESTDIR=…` und Archivierung.
+- Statische Prüfung beider Binärarchive: ARMv7-Interpreter, 63 ARMv7-Erweiterungen,
+  Mindestziel iOS 8.4, unsigniert; gleicher Satz von Modulnamen.
+- Smoke-Test auf dem Mac: Imports und Loopback-HTTP 200. Das prüft den Testcode;
+  ein Mac-Test führt keine ARMv7-Module aus.
+
+### Auf dem Apple TV geprüft
+
+Nach Signierung mit `ldid -S`: `python --version`, `json`, `socket`, `asyncio`,
+`http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`, `pyexpat` sowie ein
+HTTP-Server auf `127.0.0.1:18080`. Ein erneuter Gerätetest der veröffentlichten
+Pakete steht aus. Nicht alle 63 Erweiterungen wurden einzeln zur Laufzeit geprüft.
+
+### Fehlende Module
+
+| Module | Buildstatus |
 | --- | --- |
-| Ziel-Xcode | 6.4, Build 6E35b, aus `Contents/version.plist` |
-| Ziel-SDK | iOS 8.4, aus `SDKSettings.plist` |
-| Zielcompiler | Apple LLVM 6.1.0, clang-602.0.53; Compileraufruf und Buildlogs |
-| Toolchainpfad | `/Volumes/Xcode/Xcode.app/Contents/Developer/…` |
-| Host | Apple Silicon, ARM64; Darwin 27.2.0 im Buildprotokoll |
-| Nativer Host-Python | CPython 3.9.25; ursprünglicher Host-Build mit Apple Clang 21.0.0 |
-| Configure-Generierung | GNU Autoconf 2.69; für den Nachbau nicht neu generieren |
-| Ziel | `armv7-apple-ios8.4`, Deployment Target 8.4, Prefix `/usr/local` |
+| `_gdbm`, `_hashlib`, `_ssl`, `_tkinter`, `nis`, `ossaudiodev`, `spwd` | Abhängigkeiten nicht gefunden |
+| `_lzma` | Fehlendes `lzma.h` |
+| `_ctypes`, `_ctypes_test` | Für `darwin-arm` deaktiviert |
+| Readline, Curses | Erkennung für das Cross-Ziel übersprungen |
 
-Xcode-6.4-Downloadlinks und Apple-Anmeldehinweise stehen in den
-[Bauanleitungen](BUILD-DE.md).
+Python-Wrapper wie `ssl.py` sind ohne native Erweiterung nicht funktionsfähig.
+System-OpenSSL und System-TLS von Blackb0x ändern diesen Python-Build nicht.
+`ensurepip` ist abgeschaltet.
 
-### Neue Prüfungen auf dem Mac
+### Archive und Protokolle
 
-- Offizielle Quellen erneut heruntergeladen und mit lokalem Quellarchiv verglichen.
-- Patches auf echten Upstream-Dateien angewendet: alle drei Ergebnisse exakt
-  bytegleich mit dem vorhandenen Quellbaum.
-- Zweite Anwendung unverändert; unbekannte Änderungen werden vor dem Schreiben
-  abgelehnt; Originaldateien gesichert; Shell- und Python-Syntax geprüft.
-- Frischer ARMv7-Cross-Build mit dem neuen `build-ios.sh` erfolgreich.
-- Neues Installationsarchiv mit `make install DESTDIR=…` erzeugt.
-- Original und Neubau statisch geprüft: Interpreter plus 63 `.so`-Module sind
-  ARMv7, Mindestziel iOS 8.4; unsigniert. Zusätzlich liegt eine ARMv7-Objektdatei bei.
-- Beide Archive enthalten denselben Satz von 63 Erweiterungsmodulnamen.
-- Neues `build-host.sh` hat einen nativen CPython-3.9.25-Interpreter erfolgreich
-  gebaut und in ein separates Arbeitsverzeichnis installiert. Anschließend
-  liefen Cross-Build und Paketierung mit genau diesem neuen Host-Python erneut
-  erfolgreich; dieses Ergebnis ist das veröffentlichte Neubauarchiv.
-- Smoke-Test auf dem **Mac-Host** ausgeführt: Imports und Loopback-HTTP 200
-  erfolgreich. Dies prüft den Testcode, nicht die ARMv7-Laufzeit.
+Das Release enthält das Basisarchiv `AppleTV3-Python39-armv7-8.4.4.tar.gz`
+und den mit den Buildskripten erzeugten Build `…-rebuilt.tar.gz`. Beide sind
+unsigniert. Ihre Dateihashes stehen in `evidence/original-archive.json` und
+`evidence/rebuilt-archive.json`. Der Neubau entfernt Bytecode-Caches und enthält
+die CPython-Lizenzhinweise. Wegen Zeitstempeln, Buildpfaden und Debugdaten wird
+keine Bitgleichheit der beiden Archive erwartet.
 
-Die Archive müssen wegen Zeitstempeln, Buildpfaden, Debugdaten und aufbereiteter
-Installation nicht bitgleich sein. `original-archive.json` und
-`rebuilt-archive.json` enthalten die separaten Fingerabdrücke. Das Original
-bleibt unverändert. Der Neubau entfernt Bytecode-Caches und legt die
-CPython-Lizenzhinweise ausdrücklich bei.
-
-### Historische Tests auf dem Apple TV
-
-Aus dem ursprünglichen Geräteverlauf: AppleTV3,2, Darwin 14.0.0, Apple TV
-Software 8.4.4. Nach Signierung mit `ldid -S` funktionierten `python --version`,
-Imports von `json`, `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5),
-`zlib`, `bz2`, `pyexpat` sowie HTTP 200 auf `127.0.0.1:18080`.
-Diese Ergebnisse werden als historische Angaben aus dem Arbeitsverlauf geführt;
-es gibt keinen neuen Apple-TV-Zugriff und keinen neuen Geräte-Testbericht.
-63 gebaute Erweiterungen bedeuten nicht 63 einzeln geprüfte Imports.
-
-### Bekannte fehlende Module
-
-Das Original-Buildlog bestätigt:
-
-- Nicht gefunden: `_gdbm`, `_hashlib`, `_ssl`, `_tkinter`, `nis`, `ossaudiodev`, `spwd`.
-- Fehlgeschlagen: `_lzma`, weil `lzma.h` fehlt.
-- Für `darwin-arm` deaktiviert: `_ctypes`, `_ctypes_test`.
-- Readline-/Curses-Erkennung für dieses Ziel übersprungen.
-
-Das Vorhandensein von `ssl.py`, `lzma.py` oder `ctypes/` im Standardbibliotheksbaum
-belegt kein funktionsfähiges natives Modul. Es wird kein OpenSSL mitgeliefert;
-`ensurepip` wurde abgeschaltet. PHP und MNK-Code waren nicht Teil des
-wiederhergestellten Python-Builds. Xcode/SDK werden bei Apple bezogen.
+[`evidence/`](evidence/) enthält die technischen Buildnachweise. Persönliche
+Homepfade und Hostname sind darin ersetzt. Für die Vorbereitung und den Nachbau
+siehe [HowTo](HOWTO-DE.md). Die Blackb0x-Geräte-/Firmwareunterstützung ist
+unabhängig von der hier getesteten Python-Konfiguration.
 
 ## English
 
-Before recovery, `main` at `8635887` contained only a README, GPL license and
-status note: four commits, one branch, no releases. The files described in the
-shared chat had not been transferred to GitHub.
+I build CPython 3.9.25 for a jailbroken **AppleTV3,2 (A1469)**, ARMv7, tested
+with system version **8.4.4**, Darwin 14.0.0. The compiler target is
+`armv7-apple-ios8.4`, prefix `/usr/local`.
 
-The original Mac supplied the CPython source archive, patched source tree,
-219-line `setup.py` patch, configure records, build logs and installation
-archive. The source archive exactly matches a fresh official download. There
-are no missing upstream files and exactly **three modified upstream files**:
-`configure`, `configure.ac`, `setup.py`. All three diffs are published and their
-before/after hashes are pinned. Extra source-tree files were intermediate
-backups and Autoconf caches. The old chat's patch runner was not recovered;
-the checked-in patch tool and build scripts are newly written from recovered
-files and settings.
+Build tools: native CPython 3.9.25 on Apple Silicon; Xcode **6.4 (6E35b)**,
+Apple LLVM **6.1.0 (clang-602.0.53)** and **iPhoneOS SDK 8.4** for the target.
+The official source checksum is listed above. Exactly three upstream files are
+patched: `configure`, `configure.ac`, `setup.py`. Do not regenerate configure.
 
-Verified target tools: **Xcode 6.4 (6E35b), iOS SDK 8.4, Apple LLVM 6.1.0
-(clang-602.0.53)**, targeting `armv7-apple-ios8.4`. Host: Apple Silicon,
-Darwin 27.2.0 in build logs, native CPython 3.9.25. Original configure was
-generated with Autoconf 2.69; do not regenerate it for this procedure.
+Verified on the Mac: source checksum, exact patch output, repeated application,
+backups, rejection of unrelated edits, syntax, native-host build, cross-build
+using that interpreter, staged installation and packaging. Static archive
+checks show an ARMv7 interpreter and **63 ARMv7 extensions**, minimum iOS 8.4,
+unsigned, with matching module names. The smoke test also passed on the Mac;
+that checks the test itself, not the ARMv7 runtime.
 
-New checks used real official source files, verified exact patched output,
-repeat application, backups, rejection of unknown edits and syntax. A fresh
-cross-build and staged install succeeded. The native host-build helper also
-successfully built and installed CPython 3.9.25 in a separate work directory.
-Cross-build and packaging were then repeated successfully with this new host
-interpreter; that full-pipeline result is the published rebuilt archive.
-The smoke-test code passed on the **Mac host**, not on the ARMv7 runtime.
+Device checks covered signing, version output, `json`, `socket`, `asyncio`,
+`http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`, `pyexpat` and loopback
+HTTP on port 18080. Another device test of the release packages is pending;
+not all 63 extensions have individual runtime checks.
 
-Static inspection found an ARMv7 interpreter, **63 ARMv7 extension modules** and
-one ARMv7 object file in both installation archives; minimum iOS is 8.4 and the
-binaries are unsigned. Extension module names match. Per-file hashes are
-published in `evidence/`. Byte-identical output is not claimed: timestamps,
-build paths, debug information and staging differ. The original archive is
-preserved unchanged; the rebuild removes bytecode caches and includes CPython
-license notices explicitly. Home paths and hostname are redacted in logs.
+Missing dependencies: `_gdbm`, `_hashlib`, `_ssl`, `_tkinter`, `nis`,
+`ossaudiodev`, `spwd`; `_lzma` lacks `lzma.h`. The patch disables `_ctypes` and
+`_ctypes_test` and skips Readline/Curses detection. System OpenSSL or Blackb0x
+system TLS does not enable Python SSL. `ensurepip` is disabled.
 
-Historical device checks covered AppleTV3,2, Darwin 14.0.0, Apple TV Software
-8.4.4, signing with `ldid -S`, version output, imports of `json`, `socket`,
-`asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`, `pyexpat`,
-and loopback HTTP 200 on port 18080. **No new device runtime test was run.**
-63 built extensions does not mean all 63 imports were individually checked.
-
-Original logs confirm absent `_gdbm`, `_hashlib`, `_ssl`, `_tkinter`, `nis`,
-`ossaudiodev`, `spwd`; `_lzma` failed due to missing `lzma.h`. The patch disables
-`_ctypes`/`_ctypes_test` and skips Readline/Curses detection for `darwin-arm`.
-Python wrapper files do not make those native modules available. No OpenSSL,
-PHP, MNK code or Apple toolchain is bundled. `ensurepip` is disabled.
+Both release archives are unsigned. Their per-file hashes and build logs are
+in [`evidence/`](evidence/), with home paths and hostname replaced. The rebuilt
+archive removes bytecode caches and explicitly includes CPython license notices;
+timestamps, build paths and debug data differ. Start with the [HowTo](HOWTO-EN.md).
+Blackb0x support and this Python port's tested firmware are separate scopes.

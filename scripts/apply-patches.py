@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply recovered patches only to exact original CPython 3.9.25 files."""
+"""Apply the ARMv7 patches to exact CPython 3.9.25 source files."""
 import argparse
 import hashlib
 import json

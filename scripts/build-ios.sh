@@ -1,5 +1,5 @@
 #!/bin/bash
-# Reconstructed from the recovered config.status, Makefile and config.site.
+# Cross-compile CPython 3.9.25 with Xcode 6.4 for Apple TV 3 ARMv7.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 export WORK=${WORK:-"$ROOT/work"}

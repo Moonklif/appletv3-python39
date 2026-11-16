@@ -4,85 +4,89 @@
 
 ## Deutsch
 
-Experimenteller CPython-3.9.25-Port für ein **jailbroken AppleTV3,2**, ARMv7,
-Apple TV Software **8.4.4**, Build-Ziel `armv7-apple-ios8.4`.
+Mit diesem Projekt baue ich **Python 3.9.25 für mein Apple TV 3**.
+Meine getestete Konfiguration ist **AppleTV3,2 (A1469), ARMv7, Systemversion
+8.4.4**. Das Compilerziel ist `armv7-apple-ios8.4`.
 
-Die zuvor fehlenden Originaländerungen wurden vom Build-Mac wiederhergestellt.
-Das Repository enthält jetzt alle drei Quellpatches, die Cross-Compile-Konfiguration,
-Build- und Paketierungsskripte, Signierungsanleitung, Laufzeittest und Buildnachweise.
-Ein frischer Cross-Build mit diesen Patches wurde am 16.11.2026 auf dem Mac geprüft.
+Die Quellen bleiben bei CPython; dieses Repository enthält die nötigen
+Patches, Einstellungen und Skripte zum Nachbauen auf einem Mac.
 
-**Start:** [Bauanleitung auf Deutsch](docs/BUILD-DE.md) ·
-[Installation und Tests](docs/INSTALL.md) ·
-[Downloads / Vorabversion](https://github.com/Moonklif/appletv3-python39/releases)
+**Hier anfangen: [HowTo – vom Mac und Apple TV bis zum laufenden Python](docs/HOWTO-DE.md)**
 
-### Voraussetzungen
+Die Anleitung führt der Reihe nach durch:
 
-- macOS mit nativer CPython-3.9.25-Buildumgebung (aktuelle Mac-Entwicklerwerkzeuge).
-- **Xcode 6.4 (6E35b), iOS-SDK 8.4, Apple LLVM 6.1.0** für das ARMv7-Ziel.
-  [Bei Apple herunterladen](https://developer.apple.com/download/all/?q=Xcode%206.4)
-  oder [Xcode_6.4.dmg direkt bei Apple](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg).
-  Apple-Anmeldung erforderlich. Xcode und SDK werden von Apple bezogen.
-- Ein bereits jailbroken AppleTV3,2 mit Shell-Zugang und `ldid` zum Signieren.
+1. Mac, Kabel und Apple TV vorbereiten.
+2. Apple TV bei Bedarf mit [Blackb0x--](https://github.com/regulad/Blackb0x--) jailbreaken und SSH prüfen.
+3. Xcode 6.4 und die Mac-Werkzeuge einrichten.
+4. Host-Python und ARMv7-Python bauen.
+5. Archiv übertragen, installieren, signieren und testen.
 
-### Umfang und Grenzen
+[Bauanleitung im Detail](docs/BUILD-DE.md) · [Installation](docs/INSTALL.md) ·
+[Downloads](https://github.com/Moonklif/appletv3-python39/releases) ·
+[Build und Tests](docs/BUILD-STATUS.md)
 
-- Ursprünglicher Build: **63 native Erweiterungsmodule**; Imports von `json`,
-  `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`
-  und `pyexpat` sowie HTTP 200 sind im früheren Geräteverlauf dokumentiert.
-- `_ssl` und `_hashlib` wurden nicht gebaut; `_lzma` scheiterte am fehlenden
-  `lzma.h`. `_ctypes`, `_ctypes_test`, Readline und Curses sind für dieses
-  Cross-Ziel deaktiviert/übersprungen. Kein funktionsfähiges HTTPS oder pip
-  voraussetzen; `ensurepip` ist abgeschaltet.
-- Das wiederhergestellte Originalarchiv ist **unsigniert**. Interpreter und
-  Erweiterungsmodule müssen mit `ldid -S` signiert werden.
-- Neuer Mac-Build und statische ARMv7-Prüfung sind von historischen Gerätetests
-  getrennt dokumentiert. Es wurde kein neuer Test auf dem Apple TV durchgeführt.
-- Kein Jailbreak-Installer, kein PHP und keine MNK-Anwendung enthalten.
-  Andere Apple-TV-Modelle und Firmwarestände wurden nicht geprüft.
+### Was funktioniert?
 
-[Prüfstand und Herkunft](docs/BUILD-STATUS.md) ·
-[Patches](patches/) · [Technische Nachweise](docs/evidence/) ·
-[Lizenzen](docs/LICENSING.md)
+Der Build enthält **63 native Erweiterungsmodule**. Auf dem Apple TV wurden
+`json`, `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`,
+`bz2`, `pyexpat` und ein lokaler HTTP-Server getestet. Die komplette Baukette
+auf dem Mac wurde am 16.11.2026 geprüft.
+
+### Was wird benötigt?
+
+- Ein Mac mit Entwicklerwerkzeugen; auf Apple Silicon ausführbare Intel-Werkzeuge über Rosetta.
+- **Xcode 6.4 (6E35b) mit iOS-SDK 8.4**:
+  [Apple-Downloadarchiv](https://developer.apple.com/download/all/?q=Xcode%206.4) ·
+  [Xcode_6.4.dmg](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg).
+- Ein jailbroken AppleTV3,2 mit SSH und `ldid`.
+
+### Einschränkungen
+
+SSL/TLS, `_hashlib`, LZMA und `ctypes` sind in diesem Build nicht verfügbar.
+Readline und Curses werden beim Cross-Build übersprungen; `ensurepip` ist
+ausgeschaltet. Ein installiertes System-OpenSSL ergänzt Python nicht automatisch
+um SSL. Die Archive müssen mit `ldid -S` signiert werden.
+
+Die Release-Pakete wurden auf dem Mac gebaut und statisch geprüft; ein erneuter
+Gerätetest dieser Pakete steht aus. Andere Modelle und Firmwarestände sind für
+diesen Python-Port nicht getestet. Blackb0x hat eine eigene Kompatibilitätsliste.
+
+[Patches](patches/) · [Buildprotokolle](docs/evidence/) · [Lizenzen](docs/LICENSING.md)
 
 ## English
 
-Experimental CPython 3.9.25 for a **jailbroken AppleTV3,2**, ARMv7, Apple TV
-Software **8.4.4**, targeting `armv7-apple-ios8.4`.
+I use this project to build **Python 3.9.25 for my Apple TV 3**.
+My tested configuration is **AppleTV3,2 (A1469), ARMv7, system version 8.4.4**,
+with compiler target `armv7-apple-ios8.4`.
 
-The missing source changes have been recovered from the build Mac. This
-repository now includes all three source patches, cross-compilation settings,
-build and packaging scripts, signing instructions, a runtime smoke test and
-build evidence. A fresh cross-build using these patches was checked on the Mac
-on 2026-11-16.
+This repository provides the patches, configuration and Mac build scripts on
+top of the official CPython sources.
 
-**Start:** [English build guide](docs/BUILD-EN.md) ·
-[Installation and tests](docs/INSTALL.md) ·
-[Downloads / prerelease](https://github.com/Moonklif/appletv3-python39/releases)
+**Start here: [HowTo – from Mac and Apple TV setup to a running Python](docs/HOWTO-EN.md)**
 
-### Requirements
+The guide covers prerequisites, [Blackb0x--](https://github.com/regulad/Blackb0x--),
+SSH, Xcode 6.4, native host Python, the ARMv7 build, transfer, installation,
+signing and tests, in that order.
 
-- macOS with native CPython 3.9.25 build tools (current Mac developer tools).
-- **Xcode 6.4 (6E35b), iOS SDK 8.4, Apple LLVM 6.1.0** for the ARMv7 target.
-  [Download from Apple](https://developer.apple.com/download/all/?q=Xcode%206.4)
-  or [Apple's Xcode_6.4.dmg link](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg).
-  Apple sign-in is required. Obtain Xcode and the SDK directly from Apple.
-- An already jailbroken AppleTV3,2, shell access and `ldid` for signing.
+[Detailed build guide](docs/BUILD-EN.md) · [Installation](docs/INSTALL.md) ·
+[Downloads](https://github.com/Moonklif/appletv3-python39/releases) ·
+[Build and tests](docs/BUILD-STATUS.md)
 
-### Scope and limitations
+The build contains **63 native extensions**. Device checks covered `json`,
+`socket`, `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`,
+`pyexpat` and loopback HTTP. The full Mac build pipeline was checked on 2026-11-16.
 
-The original build contains **63 native extension modules**. Historical device
-checks covered `json`, `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite
-3.8.5), `zlib`, `bz2`, `pyexpat` and loopback HTTP 200. `_ssl` and `_hashlib`
-were not built; `_lzma` failed because `lzma.h` was missing. `_ctypes`,
-`_ctypes_test`, Readline and Curses are disabled/skipped for this cross-target.
-Do not assume working HTTPS or pip; `ensurepip` is disabled.
+Requirements: a Mac with developer tools, working Intel-tool support via Rosetta
+on Apple Silicon, **Xcode 6.4 (6E35b) / iOS SDK 8.4** from
+[Apple](https://developer.apple.com/download/all/?q=Xcode%206.4), and a jailbroken
+AppleTV3,2 with SSH and `ldid`.
 
-The recovered original archive is **unsigned**: sign the interpreter and
-extensions with `ldid -S`. New Mac builds and static ARMv7 checks are documented
-separately from historical device checks; no new Apple TV runtime test was run.
-No jailbreak installer, PHP or MNK application is included. Other models and
-firmware versions have not been checked.
+SSL/TLS, `_hashlib`, LZMA and `ctypes` are unavailable. Readline/Curses detection
+is skipped and `ensurepip` is disabled. A system OpenSSL install does not enable
+Python SSL by itself. Sign the archives' binaries using `ldid -S`.
 
-[Evidence and provenance](docs/BUILD-STATUS.md) · [Patches](patches/) ·
-[Technical evidence](docs/evidence/) · [Licenses](docs/LICENSING.md)
+Release packages have been built and statically checked on the Mac; another
+device test of these packages is pending. Other models and firmware versions
+have not been tested for this Python port. Blackb0x has its own compatibility list.
+
+[Patches](patches/) · [Build logs](docs/evidence/) · [Licenses](docs/LICENSING.md)

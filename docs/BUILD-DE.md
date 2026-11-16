@@ -1,5 +1,8 @@
 # Auf dem Mac bauen
 
+Für die komplette Reihenfolge einschließlich Mac-Vorbereitung und Jailbreak:
+[HowTo](HOWTO-DE.md).
+
 Ziel ist ein jailbroken **AppleTV3,2 mit Apple TV Software 8.4.4**. Die
 Compiler-Zielversion ist iOS **8.4**, nicht `8.4.4`. Alle folgenden Befehle
 werden zunächst auf dem Mac ausgeführt. Der Mac erhält keine ARMv7-Installation
@@ -10,8 +13,7 @@ in seinem `/usr/local`; die Paketierung verwendet ein separates Staging-Verzeich
 Für den nativen Host-Python-Build werden funktionierende aktuelle
 Mac-Entwicklerwerkzeuge benötigt. Für den Apple-TV-Build wird separat
 **Xcode 6.4 (6E35b)** mit **iOS-SDK 8.4** und **Apple LLVM 6.1.0
-(clang-602.0.53)** verwendet. Diese Kombination wurde am ursprünglichen Build
-und am neuen Cross-Build bestätigt. Ein aktuelles Xcode ersetzt die alte
+(clang-602.0.53)** verwendet. Mit dieser Kombination habe ich den ARMv7-Build geprüft. Ein aktuelles Xcode ersetzt die alte
 ARMv7-Toolchain hier nicht.
 
 - [Offizielles Apple-Downloadarchiv, Suche Xcode 6.4](https://developer.apple.com/download/all/?q=Xcode%206.4)
@@ -74,14 +76,14 @@ Oder mit anderem Xcode-Speicherort:
 XCODE_APP=/Applications/Xcode_6.4.app ./scripts/build-ios.sh
 ```
 
-Das Skript prüft die Quellen und wendet die drei wiederhergestellten Patches
+Das Skript prüft die Quellen und wendet die drei Projektpatches
 auf `configure`, `configure.ac` und `setup.py` an. Die Ergebnisse sind per
-Dateihash an den tatsächlich vorgefundenen Quellstand gebunden. Unbekannte
+Dateihash an die vorgesehenen Quellversionen gebunden. Unbekannte
 Quelländerungen werden abgelehnt; bereits gepatchte Dateien werden übersprungen.
 Originale werden als `*.appletv3-original` gesichert. **Autoconf nicht erneut
 laufen lassen**: Das passende generierte `configure` wird direkt mitgepatcht.
 
-Die rekonstruierte Konfiguration verwendet:
+Die Build-Konfiguration verwendet:
 
 ```text
 --build=<config.guess des Build-Macs>
@@ -93,7 +95,7 @@ Die rekonstruierte Konfiguration verwendet:
 -miphoneos-version-min=8.4
 ```
 
-`config/ios-armv7.site` enthält die vier gefundenen Cross-Compile-Antworten.
+`config/ios-armv7.site` enthält die vier Cross-Compile-Antworten.
 `CC`, `CXX`, `CFLAGS`, `CPPFLAGS` und `LDFLAGS` werden aus Xcode 6.4 und dessen
 SDK zusammengesetzt. Es wird kein OpenSSL eingebunden.
 

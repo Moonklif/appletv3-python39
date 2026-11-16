@@ -1,5 +1,8 @@
 # Build on macOS
 
+For the full sequence, including Mac setup and jailbreaking, start with the
+[HowTo](HOWTO-EN.md).
+
 Target: a jailbroken **AppleTV3,2**, Apple TV Software **8.4.4**. The compiler
 and SDK target is **iOS 8.4**, not `8.4.4`. These commands run on the Mac;
 packaging stages files locally instead of installing ARMv7 files into the Mac's
@@ -9,8 +12,7 @@ packaging stages files locally instead of installing ARMv7 files into the Mac's
 
 Use current Mac developer tools for a native CPython 3.9.25 host interpreter,
 and a separate **Xcode 6.4 (6E35b), iOS SDK 8.4, Apple LLVM 6.1.0
-(clang-602.0.53)** for the target build. This exact target toolchain was found
-on the original machine and used for the fresh cross-build.
+(clang-602.0.53)** for the target build. I used this target toolchain for the verified ARMv7 build.
 
 - [Apple's Xcode 6.4 download search](https://developer.apple.com/download/all/?q=Xcode%206.4)
 - [Apple's Xcode_6.4.dmg download](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg)
@@ -70,13 +72,13 @@ For a different Xcode location:
 XCODE_APP=/Applications/Xcode_6.4.app ./scripts/build-ios.sh
 ```
 
-The script applies recovered patches to `configure`, `configure.ac` and
+The script applies the project patches to `configure`, `configure.ac` and
 `setup.py`. File hashes enforce exact original or already-patched contents.
 Unknown edits are rejected. Original files are backed up as
 `*.appletv3-original`. **Do not regenerate configure with Autoconf**: both the
 input and the matching generated shell script are patched directly.
 
-The reconstructed settings are:
+The build settings are:
 
 ```text
 --build=<build Mac's config.guess result>
@@ -88,7 +90,7 @@ The reconstructed settings are:
 -miphoneos-version-min=8.4
 ```
 
-`config/ios-armv7.site` contains the four recovered configure answers. The
+`config/ios-armv7.site` contains the four cross-compilation configure answers. The
 compiler and flags reference Xcode 6.4 and its SDK. OpenSSL is not supplied.
 
 Output: `work/ios-build/python.exe`, a **Mach-O ARMv7 executable**. The `.exe`

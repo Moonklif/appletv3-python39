@@ -1,7 +1,7 @@
 Verification date: 2026-11-16
 Official CPython archive SHA-256 verified against independent download.
 All upstream files compared: 0 missing, 3 modified.
-setup.py.patch equals the recovered original 219-line patch byte-for-byte.
+setup.py.patch matches the 219-line ARMv7 project patch byte-for-byte.
 2 patch tests passed on real upstream files (exact output/idempotence/backups; reject unknown edits before writing).
 All project shell scripts: bash -n passed.
 Native host build: scripts/build-host.sh passed, CPython 3.9.25.
