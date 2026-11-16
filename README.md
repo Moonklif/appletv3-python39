@@ -1,79 +1,134 @@
 # CPython 3.9.25 for Apple TV 3
 
+[Deutsch](#deutsch) · [English](#english)
+
 ## Deutsch
 
-### Ziel
+### Status
 
-Dieses Repository dokumentiert die Arbeit an einem CPython-3.9.25-Build für
-Apple TV 3. Generation. Der bisher bestätigte Zielumfang ist:
+Experimenteller, gerätespezifischer CPython-3.9.25-Build für ein jailbroken
+Apple TV 3. Die hier dokumentierten Ergebnisse stammen aus dem geprüften
+Build- und Testverlauf; sie sind keine allgemeine Kompatibilitätszusage.
 
-- Gerät: AppleTV3,2
-- Architektur: ARMv7
-- Betriebssystem: Apple TV Software 8.4.4
+| Eigenschaft | Bestätigter Wert |
+| --- | --- |
+| Gerät | AppleTV3,2 |
+| Architektur | ARMv7 |
+| Systemmeldung | Darwin 14.0.0 |
+| Produktversion | Apple TV Software 8.4.4 |
+| Build-Ziel | `armv7-apple-ios8.4` |
+| Deployment Target | iOS 8.4 |
+| CPython | 3.9.25 |
 
-### Dokumentationsumfang
+### Bestätigte Ergebnisse
 
-Der vorgesehene Ablauf umfasst die Erstellung des CPython-Builds, einen
-projektspezifischen `setup.py`-Patch, die Installation auf dem Gerät, die
-Signierung mit `ldid` und einen HTTP-Server-Test. Die konkreten Build-Befehle,
-der Inhalt des Patches, Installationspfade und Testergebnisse sind im derzeit
-geprüften Repository-Stand nicht vorhanden. Sie werden daher hier nicht
-rekonstruiert oder als funktionierend dargestellt.
+- Der Build erzeugte 63 Erweiterungsmodule.
+- Diese Erweiterungen wurden einzeln mit `ldid` signiert.
+- Auch der Interpreter benötigte `ldid -S`, bevor `python --version`
+  erfolgreich lief.
+- Erfolgreich getestet wurden die Imports von `json`, `socket`,
+  `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`,
+  `bz2` und `pyexpat`.
+- Ein lokaler HTTP-Server antwortete mit HTTP 200 auf
+  `127.0.0.1:18080`.
 
-### Wichtige Einschränkungen
+### Patch-Status
 
-- Es ist kein tatsächlich erzeugtes oder geprüftes Binärpaket veröffentlicht.
-- SSL/TLS- beziehungsweise OpenSSL-Unterstützung ist nicht bestätigt. Diese
-  Funktionen dürfen weder vorausgesetzt noch als verfügbar dokumentiert werden.
-- Weitere Abhängigkeiten, Build-Werkzeuge, SDK-Versionen, Konfigurationsoptionen
-  und Laufzeitvoraussetzungen sind nicht bestätigt.
-- Ohne den tatsächlich geprüften `setup.py`-Patch darf kein Patchtext oder
-  Patch-Befehl angegeben werden.
-- Ohne einen verifizierten Lauf darf weder eine erfolgreiche `ldid`-Signierung
-  noch ein erfolgreicher HTTP-Server-Test behauptet werden.
+Ein getesteter, 219 Zeilen langer `setup.py`-Diff wurde im Buildverlauf
+festgehalten. Er behandelt insbesondere Darwin/`darwin-arm`, gequotete
+`-isysroot`-Pfade, Apple LLVM, Cross-Compile-Pfade sowie die
+Readline/Curses-Ausnahme und deaktiviert auf `darwin-arm` die nicht
+unterstützten Module `_ctypes` und `_ctypes_test`.
 
-### Nächster dokumentierbarer Stand
+Im Verlauf sind außerdem die Anforderungen für einen idempotenten Patch-Runner
+für `configure.ac` und das generierte `configure` dokumentiert:
+Darwin-Cross-Compile-Erkennung, `darwin-arm`, die
+`readelf`-Ausnahme, `MACOSX_DEFAULT_ARCH=armv7` und die
+Readline-Ausnahme. Die vollständigen Patch- und Runner-Dateien sind jedoch
+nicht im aktuellen Repository vorhanden und werden deshalb nicht als Dateien
+oder ausführbare Anleitung ausgegeben. Details:
+[Build- und Patch-Status](docs/BUILD-STATUS.md).
 
-Sobald Quellstand, Build-Umgebung, exakter Patch und Testausgaben geprüft
-vorliegen, kann diese README um reproduzierbare Befehle und deren Ergebnisse
-ergänzt werden. Bis dahin bleibt sie bewusst eine Bestands- und
-Einschränkungsdokumentation.
+### Einschränkungen
+
+- Dieses Repository enthält weder CPython-Quellen noch ein geprüftes
+  Binär- oder Release-Artefakt.
+- SSL/TLS bzw. OpenSSL wurde im verfügbaren Testverlauf **nicht** bestätigt.
+  Das getestete Modulverzeichnis enthält kein `ssl`; sichere
+  Netzwerkverbindungen dürfen daher nicht vorausgesetzt werden.
+- Es gibt keinen belegten End-to-End-Buildbefehl, keine verifizierten
+  Toolchain-/SDK-Versionen und keinen wiederhergestellten Original-Patch.
+- PHP ist nicht Bestandteil dieses Projekts.
+- Die Resultate gelten nur für den beschriebenen jailbroken AppleTV3,2 und
+  nicht für andere Apple-TV-Modelle oder Firmwarestände.
+
+### Wiederherstellung
+
+Für einen reproduzierbaren Build fehlen weiterhin die tatsächlich verwendeten
+CPython-Quellen, der originale `setup.py`-Patch, die
+`configure.ac`/`configure`-Patch-Runner, die genaue Toolchain-Konfiguration
+und die zugehörigen Testprotokolle. Erst nach deren Prüfung sollen sie als
+Dateien oder Befehle veröffentlicht werden.
 
 ## English
 
-### Target
+### Status
 
-This repository documents work on a CPython 3.9.25 build for the third-
-generation Apple TV. The confirmed target scope is:
+An experimental, device-specific CPython 3.9.25 build for a jailbroken
+third-generation Apple TV. The results documented here come from the reviewed
+build and test record; they are not a general compatibility guarantee.
 
-- Device: AppleTV3,2
-- Architecture: ARMv7
-- Operating system: Apple TV Software 8.4.4
+| Property | Confirmed value |
+| --- | --- |
+| Device | AppleTV3,2 |
+| Architecture | ARMv7 |
+| System report | Darwin 14.0.0 |
+| Product version | Apple TV Software 8.4.4 |
+| Build target | `armv7-apple-ios8.4` |
+| Deployment target | iOS 8.4 |
+| CPython | 3.9.25 |
 
-### Documentation scope
+### Confirmed results
 
-The intended workflow covers building CPython, applying a project-specific
-`setup.py` patch, installing the result on the device, signing with `ldid`, and
-testing an HTTP server. Concrete build commands, the patch contents,
-installation paths, and test results are not present in the currently reviewed
-repository state. They are therefore not reconstructed here or presented as
-working.
+- The build produced 63 extension modules.
+- Those extensions were individually signed with `ldid`.
+- The interpreter itself required `ldid -S` before `python --version`
+  succeeded.
+- Imports passed for `json`, `socket`, `asyncio`, `http.server`,
+  `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`, and `pyexpat`.
+- A local HTTP server returned HTTP 200 at `127.0.0.1:18080`.
 
-### Important limitations
+### Patch status
 
-- No generated or verified binary package is published.
-- SSL/TLS and OpenSSL support are unconfirmed. They must not be assumed or
-  documented as available.
-- Other dependencies, build tools, SDK versions, configuration options, and
-  runtime requirements are unconfirmed.
-- No patch text or patch command is provided without the verified `setup.py`
-  patch.
-- No successful `ldid` signing or HTTP-server test is claimed without a
-  verified run.
+A tested 219-line `setup.py` diff is recorded in the build history. It covers
+Darwin/`darwin-arm`, quoted `-isysroot` paths, Apple LLVM,
+cross-compilation paths, and the Readline/Curses exception; it also disables
+the unsupported `_ctypes` and `_ctypes_test` modules on `darwin-arm`.
 
-### Next documentable state
+The history also records requirements for an idempotent patch runner for
+`configure.ac` and generated `configure`: Darwin cross-compilation
+detection, `darwin-arm`, a `readelf` exception,
+`MACOSX_DEFAULT_ARCH=armv7`, and the Readline exception. The complete patch
+and runner files are not present in this repository, so they are not published
+as files or executable instructions. See
+[build and patch status](docs/BUILD-STATUS.md).
 
-Once the source revision, build environment, exact patch, and test output have
-been verified, this README can be extended with reproducible commands and their
-results. Until then, it intentionally remains an inventory and limitations
-document.
+### Limitations
+
+- This repository contains neither CPython sources nor a verified binary or
+  release artifact.
+- SSL/TLS and OpenSSL were **not** confirmed in the available test record.
+  The listed tested modules do not include `ssl`; secure network connections
+  must therefore not be assumed.
+- There is no evidenced end-to-end build command, verified toolchain/SDK
+  version, or recovered original patch.
+- PHP is not included in this project.
+- The results apply only to the described jailbroken AppleTV3,2, not to other
+  Apple TV models or firmware versions.
+
+### Restoration
+
+A reproducible build still requires the actual CPython source tree, original
+`setup.py` patch, `configure.ac`/`configure` patch runners, exact
+toolchain configuration, and associated test logs. Only after reviewing them
+should they be published as files or commands.
