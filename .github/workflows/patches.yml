@@ -1,0 +1,15 @@
+name: Verify recovered patches
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  patches:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch checksum-verified CPython sources
+        run: scripts/fetch-source.sh
+      - name: Test original sources, repeated application and refusal of unknown files
+        run: python3 -m unittest discover -s tests -v
+      - name: Check shell syntax
+        run: for script in scripts/*.sh; do bash -n "$script"; done

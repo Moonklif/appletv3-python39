@@ -1,0 +1,13 @@
+Verification date: 2026-11-16
+Official CPython archive SHA-256 verified against independent download.
+All upstream files compared: 0 missing, 3 modified.
+setup.py.patch equals the recovered original 219-line patch byte-for-byte.
+2 patch tests passed on real upstream files (exact output/idempotence/backups; reject unknown edits before writing).
+All project shell scripts: bash -n passed.
+Native host build: scripts/build-host.sh passed, CPython 3.9.25.
+Cross-build: scripts/build-ios.sh passed using newly built native host Python.
+Staged installation: scripts/package.sh passed.
+Original and rebuilt archives: ARMv7 interpreter + 63 ARMv7 extensions, minimum iOS 8.4, unsigned.
+Extension module filenames match. Per-file SHA-256 in archive JSON reports.
+Smoke test on Mac host: imports and loopback HTTP 200 passed (not an Apple TV test).
+No new target-device runtime test.

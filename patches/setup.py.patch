@@ -1,0 +1,219 @@
+--- a/setup.py
++++ b/setup.py
+@@ -62,9 +62,13 @@
+ HOST_PLATFORM = get_platform()
+ MS_WINDOWS = (HOST_PLATFORM == 'win32')
+ CYGWIN = (HOST_PLATFORM == 'cygwin')
++DARWIN = HOST_PLATFORM.startswith('darwin')
+ MACOS = (HOST_PLATFORM == 'darwin')
+ AIX = (HOST_PLATFORM.startswith('aix'))
+ VXWORKS = ('vxworks' in HOST_PLATFORM)
++
++if HOST_PLATFORM == 'darwin-arm':
++    DISABLED_MODULE_LIST.extend(['_ctypes', '_ctypes_test'])
+ CC = os.environ.get("CC")
+ if not CC:
+     CC = sysconfig.get_config_var("CC")
+@@ -142,7 +146,7 @@
+     for var_name in make_vars:
+         var = sysconfig.get_config_var(var_name)
+         if var is not None:
+-            m = re.search(r'--sysroot=([^"]\S*|"[^"]+")', var)
++            m = re.search(r'(?:--sysroot=|-isysroot\s*)("[^"]+"|\S+)', var)
+             if m is not None:
+                 sysroot = m.group(1).strip('"')
+                 for subdir in subdirs:
+@@ -177,9 +181,9 @@
+         return MACOS_SDK_ROOT
+ 
+     cflags = sysconfig.get_config_var('CFLAGS')
+-    m = re.search(r'-isysroot\s*(\S+)', cflags)
++    m = re.search(r'-isysroot\s*("[^"]+"|\S+)', cflags)
+     if m is not None:
+-        MACOS_SDK_ROOT = m.group(1)
++        MACOS_SDK_ROOT = m.group(1).strip('"')
+         MACOS_SDK_SPECIFIED = MACOS_SDK_ROOT != '/'
+     else:
+         MACOS_SDK_ROOT = _osx_support._default_sysroot(
+@@ -238,7 +242,7 @@
+     'paths' is a list of additional locations to check; if the file is
+         found in one of them, the resulting list will contain the directory.
+     """
+-    if MACOS:
++    if DARWIN:
+         # Honor the MacOSX SDK setting when one was specified.
+         # An SDK is a directory with the same structure as a real
+         # system, but with only header files and libraries.
+@@ -248,7 +252,7 @@
+     for dir in std_dirs:
+         f = os.path.join(dir, filename)
+ 
+-        if MACOS and is_macosx_sdk_path(dir):
++        if DARWIN and is_macosx_sdk_path(dir):
+             f = os.path.join(sysroot, dir[1:], filename)
+ 
+         if os.path.exists(f): return []
+@@ -257,7 +261,7 @@
+     for dir in paths:
+         f = os.path.join(dir, filename)
+ 
+-        if MACOS and is_macosx_sdk_path(dir):
++        if DARWIN and is_macosx_sdk_path(dir):
+             f = os.path.join(sysroot, dir[1:], filename)
+ 
+         if os.path.exists(f):
+@@ -272,7 +276,7 @@
+     if result is None:
+         return None
+ 
+-    if MACOS:
++    if DARWIN:
+         sysroot = macosx_sdk_root()
+ 
+     # Check whether the found file is in one of the standard directories
+@@ -281,7 +285,7 @@
+         # Ensure path doesn't end with path separator
+         p = p.rstrip(os.sep)
+ 
+-        if MACOS and is_macosx_sdk_path(p):
++        if DARWIN and is_macosx_sdk_path(p):
+             # Note that, as of Xcode 7, Apple SDKs may contain textual stub
+             # libraries with .tbd extensions rather than the normal .dylib
+             # shared libraries installed in /.  The Apple compiler tool
+@@ -310,7 +314,7 @@
+         # Ensure path doesn't end with path separator
+         p = p.rstrip(os.sep)
+ 
+-        if MACOS and is_macosx_sdk_path(p):
++        if DARWIN and is_macosx_sdk_path(p):
+             if os.path.join(sysroot, p[1:]) == dirname:
+                 return [ p ]
+ 
+@@ -694,7 +698,7 @@
+                     for line in fp.readlines():
+                         if line.startswith("gcc version"):
+                             is_gcc = True
+-                        elif line.startswith("clang version"):
++                        elif line.startswith("clang version") or line.startswith("Apple LLVM version"):
+                             is_clang = True
+                         elif line.startswith("#include <...>"):
+                             in_incdirs = True
+@@ -740,7 +744,7 @@
+             add_dir_to_list(self.compiler.library_dirs, '/usr/local/lib')
+             add_dir_to_list(self.compiler.include_dirs, '/usr/local/include')
+         # only change this for cross builds for 3.3, issues on Mageia
+-        if CROSS_COMPILING:
++        if CROSS_COMPILING and HOST_PLATFORM != 'darwin-arm':
+             self.add_cross_compiling_paths()
+         self.add_multiarch_paths()
+         self.add_ldflags_cppflags()
+@@ -788,7 +792,7 @@
+         if HOST_PLATFORM == 'hp-ux11':
+             self.lib_dirs += ['/usr/lib/hpux64', '/usr/lib/hpux32']
+ 
+-        if MACOS:
++        if DARWIN:
+             # This should work on any unixy platform ;-)
+             # If the user has bothered specifying additional -I and -L flags
+             # in OPT and LDFLAGS we might as well use them here.
+@@ -1138,7 +1142,7 @@
+         # socket(2)
+         if not VXWORKS:
+             kwargs = {'depends': ['socketmodule.h']}
+-            if MACOS:
++            if DARWIN:
+                 # Issue #35569: Expose RFC 3542 socket options.
+                 kwargs['extra_compile_args'] = ['-D__APPLE_USE_RFC_3542']
+ 
+@@ -1245,7 +1249,7 @@
+ 
+         db_ver_inc_map = {}
+ 
+-        if MACOS:
++        if DARWIN:
+             sysroot = macosx_sdk_root()
+ 
+         class db_found(Exception): pass
+@@ -1254,7 +1258,7 @@
+             # search path.
+             for d in self.inc_dirs + db_inc_paths:
+                 f = os.path.join(d, "db.h")
+-                if MACOS and is_macosx_sdk_path(d):
++                if DARWIN and is_macosx_sdk_path(d):
+                     f = os.path.join(sysroot, d[1:], "db.h")
+ 
+                 if db_setup_debug: print("db: looking for db.h in", f)
+@@ -1305,7 +1309,7 @@
+                     db_incdir.replace("include", 'lib'),
+                 ]
+ 
+-                if not MACOS:
++                if not DARWIN:
+                     db_dirs_to_check = list(filter(os.path.isdir, db_dirs_to_check))
+ 
+                 else:
+@@ -1464,12 +1468,12 @@
+         # Scan the default include directories before the SQLite specific
+         # ones. This allows one to override the copy of sqlite on OSX,
+         # where /usr/include contains an old version of sqlite.
+-        if MACOS:
++        if DARWIN:
+             sysroot = macosx_sdk_root()
+ 
+         for d_ in self.inc_dirs + sqlite_inc_paths:
+             d = d_
+-            if MACOS and is_macosx_sdk_path(d):
++            if DARWIN and is_macosx_sdk_path(d):
+                 d = os.path.join(sysroot, d[1:])
+ 
+             f = os.path.join(d, "sqlite3.h")
+@@ -1529,10 +1533,10 @@
+             # if --enable-loadable-sqlite-extensions configure option is used.
+             if '--enable-loadable-sqlite-extensions' not in sysconfig.get_config_var("CONFIG_ARGS"):
+                 sqlite_defines.append(("SQLITE_OMIT_LOAD_EXTENSION", "1"))
+-            elif MACOS and sqlite_incdir == os.path.join(MACOS_SDK_ROOT, "usr/include"):
++            elif DARWIN and sqlite_incdir == os.path.join(MACOS_SDK_ROOT, "usr/include"):
+                 raise DistutilsError("System version of SQLite does not support loadable extensions")
+ 
+-            if MACOS:
++            if DARWIN:
+                 # In every directory on the search path search for a dynamic
+                 # library and then a static library, instead of first looking
+                 # for dynamic libraries on the entire path.
+@@ -1602,7 +1606,7 @@
+             zlib_h = zlib_inc[0] + '/zlib.h'
+             version = '"0.0.0"'
+             version_req = '"1.1.3"'
+-            if MACOS and is_macosx_sdk_path(zlib_h):
++            if DARWIN and is_macosx_sdk_path(zlib_h):
+                 zlib_h = os.path.join(macosx_sdk_root(), zlib_h[1:])
+             with open(zlib_h) as fp:
+                 while 1:
+@@ -1614,7 +1618,7 @@
+                         break
+             if version >= version_req:
+                 if (self.compiler.find_library_file(self.lib_dirs, 'z')):
+-                    if MACOS:
++                    if DARWIN:
+                         zlib_extra_link_args = ('-Wl,-search_paths_first',)
+                     else:
+                         zlib_extra_link_args = ()
+@@ -1646,7 +1650,7 @@
+ 
+         # Gustavo Niemeyer's bz2 module.
+         if (self.compiler.find_library_file(self.lib_dirs, 'bz2')):
+-            if MACOS:
++            if DARWIN:
+                 bz2_extra_link_args = ('-Wl,-search_paths_first',)
+             else:
+                 bz2_extra_link_args = ()
+@@ -1791,7 +1795,8 @@
+         self.detect_simple_extensions()
+         if TEST_EXTENSIONS:
+             self.detect_test_extensions()
+-        self.detect_readline_curses()
++        if HOST_PLATFORM != "darwin-arm":
++            self.detect_readline_curses()
+         self.detect_crypt()
+         self.detect_socket()
+         self.detect_openssl_hashlib()

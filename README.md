@@ -4,131 +4,85 @@
 
 ## Deutsch
 
-### Status
+Experimenteller CPython-3.9.25-Port für ein **jailbroken AppleTV3,2**, ARMv7,
+Apple TV Software **8.4.4**, Build-Ziel `armv7-apple-ios8.4`.
 
-Experimenteller, gerätespezifischer CPython-3.9.25-Build für ein jailbroken
-Apple TV 3. Die hier dokumentierten Ergebnisse stammen aus dem geprüften
-Build- und Testverlauf; sie sind keine allgemeine Kompatibilitätszusage.
+Die zuvor fehlenden Originaländerungen wurden vom Build-Mac wiederhergestellt.
+Das Repository enthält jetzt alle drei Quellpatches, die Cross-Compile-Konfiguration,
+Build- und Paketierungsskripte, Signierungsanleitung, Laufzeittest und Buildnachweise.
+Ein frischer Cross-Build mit diesen Patches wurde am 16.11.2026 auf dem Mac geprüft.
 
-| Eigenschaft | Bestätigter Wert |
-| --- | --- |
-| Gerät | AppleTV3,2 |
-| Architektur | ARMv7 |
-| Systemmeldung | Darwin 14.0.0 |
-| Produktversion | Apple TV Software 8.4.4 |
-| Build-Ziel | `armv7-apple-ios8.4` |
-| Deployment Target | iOS 8.4 |
-| CPython | 3.9.25 |
+**Start:** [Bauanleitung auf Deutsch](docs/BUILD-DE.md) ·
+[Installation und Tests](docs/INSTALL.md) ·
+[Downloads / Vorabversion](https://github.com/Moonklif/appletv3-python39/releases)
 
-### Bestätigte Ergebnisse
+### Voraussetzungen
 
-- Der Build erzeugte 63 Erweiterungsmodule.
-- Diese Erweiterungen wurden einzeln mit `ldid` signiert.
-- Auch der Interpreter benötigte `ldid -S`, bevor `python --version`
-  erfolgreich lief.
-- Erfolgreich getestet wurden die Imports von `json`, `socket`,
-  `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`,
-  `bz2` und `pyexpat`.
-- Ein lokaler HTTP-Server antwortete mit HTTP 200 auf
-  `127.0.0.1:18080`.
+- macOS mit nativer CPython-3.9.25-Buildumgebung (aktuelle Mac-Entwicklerwerkzeuge).
+- **Xcode 6.4 (6E35b), iOS-SDK 8.4, Apple LLVM 6.1.0** für das ARMv7-Ziel.
+  [Bei Apple herunterladen](https://developer.apple.com/download/all/?q=Xcode%206.4)
+  oder [Xcode_6.4.dmg direkt bei Apple](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg).
+  Apple-Anmeldung erforderlich. Xcode und SDK werden von Apple bezogen.
+- Ein bereits jailbroken AppleTV3,2 mit Shell-Zugang und `ldid` zum Signieren.
 
-### Patch-Status
+### Umfang und Grenzen
 
-Ein getesteter, 219 Zeilen langer `setup.py`-Diff wurde im Buildverlauf
-festgehalten. Er behandelt insbesondere Darwin/`darwin-arm`, gequotete
-`-isysroot`-Pfade, Apple LLVM, Cross-Compile-Pfade sowie die
-Readline/Curses-Ausnahme und deaktiviert auf `darwin-arm` die nicht
-unterstützten Module `_ctypes` und `_ctypes_test`.
+- Ursprünglicher Build: **63 native Erweiterungsmodule**; Imports von `json`,
+  `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`
+  und `pyexpat` sowie HTTP 200 sind im früheren Geräteverlauf dokumentiert.
+- `_ssl` und `_hashlib` wurden nicht gebaut; `_lzma` scheiterte am fehlenden
+  `lzma.h`. `_ctypes`, `_ctypes_test`, Readline und Curses sind für dieses
+  Cross-Ziel deaktiviert/übersprungen. Kein funktionsfähiges HTTPS oder pip
+  voraussetzen; `ensurepip` ist abgeschaltet.
+- Das wiederhergestellte Originalarchiv ist **unsigniert**. Interpreter und
+  Erweiterungsmodule müssen mit `ldid -S` signiert werden.
+- Neuer Mac-Build und statische ARMv7-Prüfung sind von historischen Gerätetests
+  getrennt dokumentiert. Es wurde kein neuer Test auf dem Apple TV durchgeführt.
+- Kein Jailbreak-Installer, kein PHP und keine MNK-Anwendung enthalten.
+  Andere Apple-TV-Modelle und Firmwarestände wurden nicht geprüft.
 
-Im Verlauf sind außerdem die Anforderungen für einen idempotenten Patch-Runner
-für `configure.ac` und das generierte `configure` dokumentiert:
-Darwin-Cross-Compile-Erkennung, `darwin-arm`, die
-`readelf`-Ausnahme, `MACOSX_DEFAULT_ARCH=armv7` und die
-Readline-Ausnahme. Die vollständigen Patch- und Runner-Dateien sind jedoch
-nicht im aktuellen Repository vorhanden und werden deshalb nicht als Dateien
-oder ausführbare Anleitung ausgegeben. Details:
-[Build- und Patch-Status](docs/BUILD-STATUS.md).
-
-### Einschränkungen
-
-- Dieses Repository enthält weder CPython-Quellen noch ein geprüftes
-  Binär- oder Release-Artefakt.
-- SSL/TLS bzw. OpenSSL wurde im verfügbaren Testverlauf **nicht** bestätigt.
-  Das getestete Modulverzeichnis enthält kein `ssl`; sichere
-  Netzwerkverbindungen dürfen daher nicht vorausgesetzt werden.
-- Es gibt keinen belegten End-to-End-Buildbefehl, keine verifizierten
-  Toolchain-/SDK-Versionen und keinen wiederhergestellten Original-Patch.
-- PHP ist nicht Bestandteil dieses Projekts.
-- Die Resultate gelten nur für den beschriebenen jailbroken AppleTV3,2 und
-  nicht für andere Apple-TV-Modelle oder Firmwarestände.
-
-### Wiederherstellung
-
-Für einen reproduzierbaren Build fehlen weiterhin die tatsächlich verwendeten
-CPython-Quellen, der originale `setup.py`-Patch, die
-`configure.ac`/`configure`-Patch-Runner, die genaue Toolchain-Konfiguration
-und die zugehörigen Testprotokolle. Erst nach deren Prüfung sollen sie als
-Dateien oder Befehle veröffentlicht werden.
+[Prüfstand und Herkunft](docs/BUILD-STATUS.md) ·
+[Patches](patches/) · [Technische Nachweise](docs/evidence/) ·
+[Lizenzen](docs/LICENSING.md)
 
 ## English
 
-### Status
+Experimental CPython 3.9.25 for a **jailbroken AppleTV3,2**, ARMv7, Apple TV
+Software **8.4.4**, targeting `armv7-apple-ios8.4`.
 
-An experimental, device-specific CPython 3.9.25 build for a jailbroken
-third-generation Apple TV. The results documented here come from the reviewed
-build and test record; they are not a general compatibility guarantee.
+The missing source changes have been recovered from the build Mac. This
+repository now includes all three source patches, cross-compilation settings,
+build and packaging scripts, signing instructions, a runtime smoke test and
+build evidence. A fresh cross-build using these patches was checked on the Mac
+on 2026-11-16.
 
-| Property | Confirmed value |
-| --- | --- |
-| Device | AppleTV3,2 |
-| Architecture | ARMv7 |
-| System report | Darwin 14.0.0 |
-| Product version | Apple TV Software 8.4.4 |
-| Build target | `armv7-apple-ios8.4` |
-| Deployment target | iOS 8.4 |
-| CPython | 3.9.25 |
+**Start:** [English build guide](docs/BUILD-EN.md) ·
+[Installation and tests](docs/INSTALL.md) ·
+[Downloads / prerelease](https://github.com/Moonklif/appletv3-python39/releases)
 
-### Confirmed results
+### Requirements
 
-- The build produced 63 extension modules.
-- Those extensions were individually signed with `ldid`.
-- The interpreter itself required `ldid -S` before `python --version`
-  succeeded.
-- Imports passed for `json`, `socket`, `asyncio`, `http.server`,
-  `sqlite3` (SQLite 3.8.5), `zlib`, `bz2`, and `pyexpat`.
-- A local HTTP server returned HTTP 200 at `127.0.0.1:18080`.
+- macOS with native CPython 3.9.25 build tools (current Mac developer tools).
+- **Xcode 6.4 (6E35b), iOS SDK 8.4, Apple LLVM 6.1.0** for the ARMv7 target.
+  [Download from Apple](https://developer.apple.com/download/all/?q=Xcode%206.4)
+  or [Apple's Xcode_6.4.dmg link](https://download.developer.apple.com/Developer_Tools/Xcode_6.4/Xcode_6.4.dmg).
+  Apple sign-in is required. Obtain Xcode and the SDK directly from Apple.
+- An already jailbroken AppleTV3,2, shell access and `ldid` for signing.
 
-### Patch status
+### Scope and limitations
 
-A tested 219-line `setup.py` diff is recorded in the build history. It covers
-Darwin/`darwin-arm`, quoted `-isysroot` paths, Apple LLVM,
-cross-compilation paths, and the Readline/Curses exception; it also disables
-the unsupported `_ctypes` and `_ctypes_test` modules on `darwin-arm`.
+The original build contains **63 native extension modules**. Historical device
+checks covered `json`, `socket`, `asyncio`, `http.server`, `sqlite3` (SQLite
+3.8.5), `zlib`, `bz2`, `pyexpat` and loopback HTTP 200. `_ssl` and `_hashlib`
+were not built; `_lzma` failed because `lzma.h` was missing. `_ctypes`,
+`_ctypes_test`, Readline and Curses are disabled/skipped for this cross-target.
+Do not assume working HTTPS or pip; `ensurepip` is disabled.
 
-The history also records requirements for an idempotent patch runner for
-`configure.ac` and generated `configure`: Darwin cross-compilation
-detection, `darwin-arm`, a `readelf` exception,
-`MACOSX_DEFAULT_ARCH=armv7`, and the Readline exception. The complete patch
-and runner files are not present in this repository, so they are not published
-as files or executable instructions. See
-[build and patch status](docs/BUILD-STATUS.md).
+The recovered original archive is **unsigned**: sign the interpreter and
+extensions with `ldid -S`. New Mac builds and static ARMv7 checks are documented
+separately from historical device checks; no new Apple TV runtime test was run.
+No jailbreak installer, PHP or MNK application is included. Other models and
+firmware versions have not been checked.
 
-### Limitations
-
-- This repository contains neither CPython sources nor a verified binary or
-  release artifact.
-- SSL/TLS and OpenSSL were **not** confirmed in the available test record.
-  The listed tested modules do not include `ssl`; secure network connections
-  must therefore not be assumed.
-- There is no evidenced end-to-end build command, verified toolchain/SDK
-  version, or recovered original patch.
-- PHP is not included in this project.
-- The results apply only to the described jailbroken AppleTV3,2, not to other
-  Apple TV models or firmware versions.
-
-### Restoration
-
-A reproducible build still requires the actual CPython source tree, original
-`setup.py` patch, `configure.ac`/`configure` patch runners, exact
-toolchain configuration, and associated test logs. Only after reviewing them
-should they be published as files or commands.
+[Evidence and provenance](docs/BUILD-STATUS.md) · [Patches](patches/) ·
+[Technical evidence](docs/evidence/) · [Licenses](docs/LICENSING.md)

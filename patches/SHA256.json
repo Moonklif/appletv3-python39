@@ -1,0 +1,14 @@
+{
+  "configure": {
+    "original": "d549952384c0b8defcfafe10ca0fca01e213339fb6a20877b9286ace68c6353f",
+    "patched": "b78a4cc830809d72faa8b37433bb2780c054d24981a600af2c447f0b022d4770"
+  },
+  "configure.ac": {
+    "original": "56ecaa10bddcafd3123bc430e1b08c37fa2b743a2e1e85ac353d0ff37df35a3e",
+    "patched": "5a9441e17b0e04e3b4dbe8b76c8d424d95d16641ce1dae8ca062ef538a52ca38"
+  },
+  "setup.py": {
+    "original": "1ddaaa826eb0b5e3407571e8c9caa2ca25de4c72516f1db92636518d759c03ac",
+    "patched": "abbffaef51aa03a361ff25660c23c78c799012df6ce18f3fbd92a5ee808667d7"
+  }
+}

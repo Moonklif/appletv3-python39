@@ -1,0 +1,141 @@
+--- a/configure
++++ b/configure
+@@ -3319,6 +3319,9 @@
+ 	*-*-vxworks*)
+ 	    ac_sys_system=VxWorks
+ 	    ;;
++	*-*-darwin*)
++	    ac_sys_system=Darwin
++	    ;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -3368,6 +3371,12 @@
+ 		;;
+ 	*-*-vxworks*)
+ 		_host_cpu=$host_cpu
++		;;
++	*-*-darwin*)
++		case "$host_cpu" in
++			arm*) _host_cpu=arm ;;
++			*) as_fn_error $? "unsupported Darwin cross-build CPU: $host_cpu" "$LINENO" 5 ;;
++		esac
+ 		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+@@ -6234,10 +6243,15 @@
+ fi
+ 
+ if test "$cross_compiling" = yes; then
+-    case "$READELF" in
+-	readelf|:)
+-	as_fn_error $? "readelf for the host is required for cross builds" "$LINENO" 5
+-	;;
++    case "$host" in
++    *-*-darwin*) ;;
++    *)
++        case "$READELF" in
++        readelf|:)
++            as_fn_error $? "readelf for the host is required for cross builds" "$LINENO" 5
++            ;;
++        esac
++        ;;
+     esac
+ fi
+ 
+@@ -9388,36 +9402,39 @@
+ fi
+ 
+ 
+-    if test "${ac_osx_32bit}" = "yes"; then
+-    	case `/usr/bin/arch` in
+-    	i386)
+-    		MACOSX_DEFAULT_ARCH="i386"
+-    		;;
+-    	ppc)
+-    		MACOSX_DEFAULT_ARCH="ppc"
+-    		;;
+-    	*)
+-    		as_fn_error $? "Unexpected output of 'arch' on macOS" "$LINENO" 5
+-    		;;
+-    	esac
++    if test "$cross_compiling" = yes; then
++        case "$host_cpu" in
++        arm*) MACOSX_DEFAULT_ARCH="armv7" ;;
++        *) as_fn_error $? "unsupported Darwin cross-build CPU: $host_cpu" "$LINENO" 5 ;;
++        esac
++    elif test "${ac_osx_32bit}" = "yes"; then
++        case `/usr/bin/arch` in
++        i386)
++            MACOSX_DEFAULT_ARCH="i386"
++            ;;
++        ppc)
++            MACOSX_DEFAULT_ARCH="ppc"
++            ;;
++        *)
++            as_fn_error $? "Unexpected output of 'arch' on macOS" "$LINENO" 5
++            ;;
++        esac
+     else
+-    	case `/usr/bin/arch` in
+-    	i386)
+-    		MACOSX_DEFAULT_ARCH="x86_64"
+-    		;;
+-    	ppc)
+-    		MACOSX_DEFAULT_ARCH="ppc64"
+-		;;
+-    	arm64)
+-    		MACOSX_DEFAULT_ARCH="arm64"
+-    		;;
+-    	*)
+-    		as_fn_error $? "Unexpected output of 'arch' on macOS" "$LINENO" 5
+-    		;;
+-    	esac
+-
++        case `/usr/bin/arch` in
++        i386)
++            MACOSX_DEFAULT_ARCH="x86_64"
++            ;;
++        ppc)
++            MACOSX_DEFAULT_ARCH="ppc64"
++            ;;
++        arm64)
++            MACOSX_DEFAULT_ARCH="arm64"
++            ;;
++        *)
++            as_fn_error $? "Unexpected output of 'arch' on macOS" "$LINENO" 5
++            ;;
++        esac
+     fi
+-
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT" -lSystem -lSystemStubs -arch_only ${MACOSX_DEFAULT_ARCH}"
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(PYTHONFRAMEWORKINSTALLDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)'
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -compatibility_version $(VERSION) -current_version $(VERSION)';;
+@@ -15590,6 +15607,18 @@
+ fi
+ 
+ # check where readline lives
++LIBS_no_readline=$LIBS
++
++case "$cross_compiling:$host_os" in
++    yes:darwin*) _python_skip_readline=yes ;;
++    *) _python_skip_readline=no ;;
++esac
++
++if test "$_python_skip_readline" = yes; then
++    py_cv_lib_readline=no
++    have_readline=no
++else
++
+ # save the value of LIBS so we don't actually link Python with readline
+ LIBS_no_readline=$LIBS
+ 
+@@ -15935,6 +15964,8 @@
+ 
+ fi
+ 
++
++fi
+ 
+ # End of readline checks: restore LIBS
+ LIBS=$LIBS_no_readline
